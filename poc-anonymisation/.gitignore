@@ -1,0 +1,8 @@
+target/
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Modèles NER : volumineux, téléchargés par scripts/download-model.sh
+models/

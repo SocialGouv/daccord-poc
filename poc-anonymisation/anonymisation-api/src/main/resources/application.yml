@@ -1,0 +1,28 @@
+spring:
+  application:
+    name: anonymisation
+  mvc:
+    # Erreurs au format RFC 9457 (application/problem+json), avec le message métier dans « detail ».
+    problemdetails:
+      enabled: true
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 20MB
+
+anonymisation:
+  # Types anonymisés, et donc contrôlés par la vérification. DIVERS (MISC du modèle) est bruyant.
+  types: [PERSONNE, LIEU, ORGANISATION, EMAIL, TELEPHONE, IBAN, NIR, SIRET]
+  # Le rappel prime. Avec le modèle quantifié, 0,5 laissait passer « Jean Dupont » en entier dans
+  # « L'assuré, Jean Dupont » (probabilités 0,44 et 0,50) ; avec le modèle complet 0,3 et 0,5
+  # donnent les mêmes résultats sur 11 phrases : on garde 0,3 par prudence.
+  min-score: 0.3
+  ner:
+    # Sans NER, seuls les identifiants structurés sont détectés : à n'utiliser que pour les tests.
+    enabled: true
+    # Relatif au répertoire de travail : ../models convient à « mvn spring-boot:run » depuis anonymisation-api.
+    model-dir: ${ANONYMISATION_MODEL_DIR:../models/camembert-ner}
+    # Modèle complet (440 Mo, ~0,8 Go de RAM). La version quantifiée int8 (onnx/model_quantized.onnx,
+    # 111 Mo, ~1,5 fois plus rapide) manque des prénoms courants et des noms complets : voir le README.
+    model-file: onnx/model.onnx
+    max-chunk-chars: 1200
