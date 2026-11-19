@@ -10,9 +10,12 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import org.springframework.beans.factory.ObjectProvider;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
 class AnonymisationConfiguration {
@@ -51,5 +54,21 @@ class AnonymisationConfiguration {
   @Bean
   WordTextExtractor wordTextExtractor() {
     return new WordTextExtractor();
+  }
+
+  /**
+   * Absent par défaut : l'API n'accepte alors que son propre domaine. Pour la page {@code
+   * index.html} ouverte hors du serveur : {@code --anonymisation.cors.allowed-origins=*}.
+   */
+  @Bean
+  @ConditionalOnProperty(prefix = "anonymisation.cors", name = "allowed-origins")
+  WebMvcConfigurer corsConfigurer(
+      @Value("${anonymisation.cors.allowed-origins}") String[] allowedOrigins) {
+    return new WebMvcConfigurer() {
+      @Override
+      public void addCorsMappings(CorsRegistry registry) {
+        registry.addMapping("/api/**").allowedOrigins(allowedOrigins).allowedMethods("POST");
+      }
+    };
   }
 }

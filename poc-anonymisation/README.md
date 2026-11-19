@@ -158,6 +158,8 @@ curl -F "file=@accord.docx" -o accord.anonymise.docx -D - http://localhost:8080/
 curl -F "file=@accord.anonymise.docx" -F "original=@accord.docx" http://localhost:8080/api/verifications/word
 ```
 
+Page de test : `index.html` (à la racine) envoie le texte saisi aux services « chaîne » de vérification et d'anonymisation, et affiche les deux résultats côte à côte. Le build la copie dans le jar : elle est servie par l'application sur <http://localhost:8080/>, sans réglage. Pour l'ouvrir directement depuis le fichier (ou depuis un autre serveur), l'API n'autorise par défaut que son propre domaine : la démarrer avec `--anonymisation.cors.allowed-origins=*`, et ajouter `?api=http://localhost:8080` à l'adresse si la page n'est pas ouverte en `file://`.
+
 Les tests sur le vrai modèle (`OnnxNerRecognizerModelTest`) sont ignorés tant que `models/camembert-ner` n'existe pas.
 
 Les documents d'essai `accord.docx` et `accord.doc` (dans `anonymisation-documents/src/test/resources/fixtures` et `anonymisation-api/src/test/resources/fixtures`) sont fictifs, générés avec LibreOffice.
@@ -171,6 +173,7 @@ Les documents d'essai `accord.docx` et `accord.doc` (dans `anonymisation-documen
 | `anonymisation.ner.enabled` | `true` | `false` : motifs structurés seulement |
 | `anonymisation.ner.model-dir` | `../models/camembert-ner` (`ANONYMISATION_MODEL_DIR`) | répertoire du modèle |
 | `anonymisation.ner.model-file` | `onnx/model.onnx` | fichier ONNX (`onnx/model_quantized.onnx` pour la version int8) |
+| `anonymisation.cors.allowed-origins` | absent (pas de CORS) | origines autorisées à appeler `/api/**` depuis un navigateur, par exemple `*` pour ouvrir `index.html` hors de l'application |
 
 ## Performances
 
