@@ -6,3 +6,6 @@ target/
 
 # Modèles NER : volumineux, téléchargés par scripts/download-model.sh
 models/
+
+# Certificat HTTPS auto-signé de développement et son mot de passe, créés par run.sh
+.local/

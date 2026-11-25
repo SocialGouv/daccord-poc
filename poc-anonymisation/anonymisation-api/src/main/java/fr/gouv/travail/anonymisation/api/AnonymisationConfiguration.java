@@ -9,9 +9,12 @@ import fr.gouv.travail.anonymisation.core.verification.AnonymizationVerifier;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import org.apache.catalina.connector.Connector;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
@@ -54,6 +57,22 @@ class AnonymisationConfiguration {
   @Bean
   WordTextExtractor wordTextExtractor() {
     return new WordTextExtractor();
+  }
+
+  /**
+   * Absent par défaut : l'application n'écoute alors que sur {@code server.port}. Avec {@code
+   * anonymisation.http.port}, Tomcat écoute aussi en HTTP sur ce port : Spring Boot n'ouvre qu'un
+   * port, que {@code server.ssl.*} fait passer en HTTPS (voir {@code run.sh}).
+   */
+  @Bean
+  @ConditionalOnProperty(prefix = "anonymisation.http", name = "port")
+  WebServerFactoryCustomizer<TomcatServletWebServerFactory> httpConnectorCustomizer(
+      @Value("${anonymisation.http.port}") int port) {
+    return factory -> {
+      Connector connector = new Connector(TomcatServletWebServerFactory.DEFAULT_PROTOCOL);
+      connector.setPort(port);
+      factory.addAdditionalTomcatConnectors(connector);
+    };
   }
 
   /**

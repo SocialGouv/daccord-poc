@@ -7,6 +7,8 @@ La détection combine :
 - un modèle **NER** (CamemBERT, français) pour les noms de personnes, lieux et organisations ;
 - des **motifs structurés** validés par clé de contrôle pour les e-mails, téléphones, IBAN, NIR (sécurité sociale) et SIRET, que le NER ne voit pas.
 
+Documentation détaillée de la V0 (contexte, architecture, décisions, exemples, tests, limites) : [docs/V0.md](docs/V0.md).
+
 ## Les six services
 
 Les services « texte » et « chaîne » rendent le texte anonymisé en JSON. Le service **Word** d'anonymisation rend le **document Word anonymisé**, au même format que celui reçu.
@@ -142,6 +144,19 @@ java -jar anonymisation-api/target/api-0.1.0-SNAPSHOT.jar --anonymisation.ner.mo
 
 Sans modèle, l'application **refuse de démarrer** (message indiquant le script). Pour tester sans NER : `--anonymisation.ner.enabled=false`. Si le port 8080 est pris : `--server.port=8099`.
 
+**En une commande** : `./run.sh` (à la racine) construit le jar sans les tests puis lance l'application **en HTTP (8080) et en HTTPS (8443)**. Il trouve tout seul un JDK 21, refuse de démarrer si un port est pris, et crée au premier lancement un certificat **auto-signé de développement** dans `.local/` (ignoré par git, mot de passe aléatoire) : avec `curl`, ajouter `-k`.
+
+```bash
+./run.sh                                       # build (sans tests) puis HTTP 8080 + HTTPS 8443
+HTTP_PORT=8099 HTTPS_PORT=8499 ./run.sh        # autres ports
+./run.sh --tests                               # build avec les tests
+./run.sh --no-build                            # relance le jar déjà construit
+./run.sh -- --anonymisation.ner.enabled=false  # options passées à l'application
+HTTPS_KEYSTORE=k.p12 HTTPS_KEYSTORE_PASSWORD=… ./run.sh   # autre certificat PKCS12
+```
+
+Spring Boot n'ouvre qu'un port : le HTTPS est sur `server.port` (avec `server.ssl.*`), et `anonymisation.http.port` ajoute un connecteur HTTP sur le même serveur. Sans cette clé, l'application n'écoute que sur `server.port`, comme avant. `./run.sh --help` liste les variables.
+
 Swagger UI : <http://localhost:8080/swagger-ui.html>
 
 ```bash
@@ -173,6 +188,7 @@ Les documents d'essai `accord.docx` et `accord.doc` (dans `anonymisation-documen
 | `anonymisation.ner.enabled` | `true` | `false` : motifs structurés seulement |
 | `anonymisation.ner.model-dir` | `../models/camembert-ner` (`ANONYMISATION_MODEL_DIR`) | répertoire du modèle |
 | `anonymisation.ner.model-file` | `onnx/model.onnx` | fichier ONNX (`onnx/model_quantized.onnx` pour la version int8) |
+| `anonymisation.http.port` | absent (un seul port, `server.port`) | port HTTP additionnel : avec `server.ssl.*`, l'application sert HTTPS sur `server.port` et HTTP sur ce port (c'est ce que fait `run.sh`) |
 | `anonymisation.cors.allowed-origins` | absent (pas de CORS) | origines autorisées à appeler `/api/**` depuis un navigateur, par exemple `*` pour ouvrir `index.html` hors de l'application |
 
 ## Performances
