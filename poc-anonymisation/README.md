@@ -157,6 +157,17 @@ HTTPS_KEYSTORE=k.p12 HTTPS_KEYSTORE_PASSWORD=… ./run.sh   # autre certificat P
 
 Spring Boot n'ouvre qu'un port : le HTTPS est sur `server.port` (avec `server.ssl.*`), et `anonymisation.http.port` ajoute un connecteur HTTP sur le même serveur. Sans cette clé, l'application n'écoute que sur `server.port`, comme avant. `./run.sh --help` liste les variables.
 
+**Comme service systemd** (serveur Linux, par exemple une instance EC2) : `sudo ./install-service.sh` installe le jar, le modèle et un certificat auto-signé dans `/opt/anonymisation` et `/etc/anonymisation`, crée l'utilisateur système `anonymisation`, puis démarre le service en **HTTP (80) et HTTPS (443)** et vérifie qu'il répond. Le relancer met à jour le jar ; `--uninstall` ou `--purge` le supprime. Il faut Java 21 avec `keytool`, systemd et `curl`.
+
+```bash
+sudo ./install-service.sh --host mon-serveur.exemple.fr   # nom ou IP des clients, pour le certificat
+sudo ./install-service.sh --keystore k.p12 --keystore-password-file k.pass   # autre certificat PKCS12
+sudo ./install-service.sh --http-port 8080 --https-port 8443 --java-opts "-Xmx1g"
+sudo ./install-service.sh --purge                         # repartir de zéro
+```
+
+L'API n'a aucune authentification : n'ouvrir ces ports (groupe de sécurité) qu'aux machines autorisées. `./install-service.sh --help` liste les options.
+
 Swagger UI : <http://localhost:8080/swagger-ui.html>
 
 ```bash
