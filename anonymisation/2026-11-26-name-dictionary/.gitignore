@@ -1,0 +1,14 @@
+target/
+.idea/
+*.iml
+.vscode/
+.DS_Store
+
+# Modèles NER : volumineux, téléchargés par scripts/download-model.sh
+models/
+
+# Certificat HTTPS auto-signé de développement et son mot de passe, créés par run.sh
+.local/
+
+# Dictionnaire des prénoms et noms : construit par scripts/download-dictionary.py
+dictionnaires/
